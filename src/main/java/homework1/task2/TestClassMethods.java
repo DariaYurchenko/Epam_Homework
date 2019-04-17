@@ -1,25 +1,18 @@
 package homework1.task2;
 
-import homework1.task2.annotation.After;
-import homework1.task2.annotation.Before;
 import homework1.task2.annotation.Ignore;
 import homework1.task2.annotation.Test;
-
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class TestClassMethods {
-    private ArrayList<Method> ignoreMethods;
-    private ArrayList<Method> testMethods;
-    private ArrayList<Method> beforeMethods;
-    private ArrayList<Method> afterMethods;
-
+    private List<Method> testMethods;
 
     public TestClassMethods() {
-        this.ignoreMethods = new ArrayList<>();
         this.testMethods = new ArrayList<>();
-        this.beforeMethods = new ArrayList<>();
-        this.afterMethods = new ArrayList<>();
     }
 
     private Method[] getMethods() {
@@ -29,89 +22,32 @@ public class TestClassMethods {
     }
 
     private void getTestMethods() {
-        for(int i = 0; i < getMethods().length; i++) {
-            if(!getMethods()[i].isAnnotationPresent(Ignore.class) && getMethods()[i].isAnnotationPresent(Test.class)) {
-                testMethods.add(getMethods()[i]);
-            }
-        }
-    }
-
-    private void getIgnoredMethods() {
-        for(int i = 0; i < getMethods().length; i++) {
-            if(getMethods()[i].isAnnotationPresent(Ignore.class)) {
-                ignoreMethods.add(getMethods()[i]);
-            }
-        }
-    }
-
-    private void getBeforeMethods() {
-        for(int i = 0; i < getMethods().length; i++) {
-            if(getMethods()[i].isAnnotationPresent(Before.class)) {
-                beforeMethods.add(getMethods()[i]);
-            }
-        }
-    }
-
-    private void getAfterMethods() {
-        for(int i = 0; i < getMethods().length; i++) {
-            if(getMethods()[i].isAnnotationPresent(After.class)) {
-                afterMethods.add(getMethods()[i]);
-            }
-        }
-    }
-
-    private void getAllMethods(){
-        getTestMethods();
-        getBeforeMethods();
-        getAfterMethods();
-        getIgnoredMethods();
+        testMethods = Arrays.stream(getMethods())
+                .filter(method -> method.isAnnotationPresent(Test.class))
+                .filter(method -> !method.isAnnotationPresent(Ignore.class))
+                .collect(Collectors.toList());
     }
 
     private void runSingleMethod(Object instance, Method method) {
+        Class<? extends Throwable> expectedException = method.getAnnotation(Test.class).expected();
         try {
             method.invoke(instance);
         } catch (Exception e) {
-            e.printStackTrace();
+            if (expectedException.equals(e.getCause().getClass())) {
+                System.out.println("It is correct exception.");
+            }
         }
     }
 
-    private void runIgnoreMethods(TestClass testClass) {
-        for (Method ignoreMethod : ignoreMethods) {
-            runSingleMethod(testClass, ignoreMethod);
-        }
-    }
-
-    private void runTestMethods(TestClass testClass) {
-        for (Method testMethod : testMethods) {
-            runSingleMethod(testClass, testMethod);
-        }
-    }
-
-    private void runBeforeMethods(TestClass testClass) {
-        for (Method beforeMethod : beforeMethods) {
-            runSingleMethod(testClass, beforeMethod);
-        }
-    }
-
-    private void runAfterMethods(TestClass testClass) {
-        for (Method afterMethod : afterMethods) {
-            runSingleMethod(testClass, afterMethod);
-        }
-    }
-
-    private void runAllMethods(TestClass testClass) {
-        for (Method testMethod : testMethods) {
-            runBeforeMethods(testClass);
-            runSingleMethod(testClass, testMethod);
-            runAfterMethods(testClass);
-        }
+    private void runTestMethods(Object instance) {
+        getTestMethods();
+        testMethods.forEach(method -> runSingleMethod(instance, method));
     }
 
     public static void main(String[] args) throws Exception {
         TestClass testClass = new TestClass();
         TestClassMethods testClassMethods = new TestClassMethods();
-        testClassMethods.getAllMethods();
-        testClassMethods.runAllMethods(testClass);
-    }
+        testClassMethods.runTestMethods(testClass);
 
+    }
 }

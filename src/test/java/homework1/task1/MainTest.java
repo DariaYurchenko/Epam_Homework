@@ -15,13 +15,13 @@ public class MainTest {
 
     @Test
     public void shouldCreateNewSingleton() throws Exception {
-        boolean compareSingletones = main.makeSingleton().equals(main.makeByReflection());
+        boolean compareSingletones = (main.makeSingleton() == main.makeByReflection());
         assertFalse(compareSingletones);
     }
 
     @Test
     public void shouldNotCreateNewSingleton() throws Exception {
-        boolean compareSingletones = main.makeSingleton().equals(main.makeSingleton());
+        boolean compareSingletones = (main.makeSingleton() == (main.makeSingleton()));
         assertTrue(compareSingletones);
     }
 
