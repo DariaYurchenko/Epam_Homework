@@ -24,7 +24,7 @@ public class TestClass {
     @Test(expected = NullPointerException.class)
     public void shouldThrowException() {
         System.out.println("Null pointer exception was thrown.");
-        throw new NullPointerException();
+        throw new NullPointerException("It's an expected exception.");
     }
 
 }

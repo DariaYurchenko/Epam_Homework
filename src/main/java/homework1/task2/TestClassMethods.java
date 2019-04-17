@@ -35,6 +35,7 @@ public class TestClassMethods {
         } catch (Exception e) {
             if (expectedException.equals(e.getCause().getClass())) {
                 System.out.println("It is correct exception.");
+                System.out.println("It's an expected exception.".equals(e.getCause().getMessage()));
             }
         }
     }
